@@ -5,15 +5,13 @@ import com.example.mailsystem.model.Token;
 import com.example.mailsystem.model.User;
 import com.example.mailsystem.repository.UserRepository;
 import com.example.mailsystem.util.JwtUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @Service
 public class AuthenticationService {
 
@@ -21,6 +19,7 @@ public class AuthenticationService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
+    private final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     @Autowired
     public AuthenticationService(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserRepository userRepository) {
@@ -33,8 +32,16 @@ public class AuthenticationService {
         Authentication auth = null;
         try {
             auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(),user.getPassword()));
+        } catch (BadCredentialsException exception) {
+            logger.error("BadCredentialsException: ", exception);
+            throw new BadCredentialsException("Bad Credentials");
         } catch (AuthenticationException exception) {
-            throw new UserNotExistException("User Doesn't Exist11");
+            logger.error("AuthenticationException: ", exception);
+            throw new AuthenticationException("Authentication Exception") {
+            };
+        } catch (Exception exception) {
+            logger.error("Exception: ", exception);
+            throw new UserNotExistException("Internal Server Error");
         }
 
         if( auth == null || !auth.isAuthenticated()) {
