@@ -22,7 +22,7 @@ public class RegisterService {
     public void add(User user) {
 
         if(userRepository.existsById(user.getUsername())) {
-            throw new UserAlreadyExistException("user already exists");
+            throw new UserAlreadyExistException("User already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
